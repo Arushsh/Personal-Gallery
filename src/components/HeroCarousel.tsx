@@ -2,20 +2,21 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
+import type { MediaResource } from "@/app/gallery/page"
 
-interface MediaItem {
-    public_id: string;
-    secure_url: string;
-    resource_type: "image" | "video";
-    width?: number;
-    height?: number;
-    format?: string;
-    created_at?: string;
-}
+// interface MediaItem {
+//     public_id: string;
+//     secure_url: string;
+//     resource_type: "image" | "video";
+//     width?: number;
+//     height?: number;
+//     format?: string;
+//     created_at?: string;
+// }
 
 interface HeroCarouselProps {
-    items: MediaItem[];
-    onItemClick: (item: MediaItem) => void;
+    items: MediaResource[]
+    onItemClick: (item: MediaResource) => void
 }
 
 export function HeroCarousel({ items, onItemClick }: HeroCarouselProps) {

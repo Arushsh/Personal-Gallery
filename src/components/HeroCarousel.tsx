@@ -6,7 +6,11 @@ import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 interface MediaItem {
     public_id: string;
     secure_url: string;
-    resource_type: string;
+    resource_type: "image" | "video";
+    width?: number;
+    height?: number;
+    format?: string;
+    created_at?: string;
 }
 
 interface HeroCarouselProps {

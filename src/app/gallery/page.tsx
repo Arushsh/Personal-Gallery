@@ -8,7 +8,7 @@ import Link from "next/link";
 import { IntroCard } from "@/components/IntroCard";
 import { HeroCarousel } from "@/components/HeroCarousel";
 
-interface MediaResource {
+export interface MediaResource {
     public_id: string;
     secure_url: string;
     resource_type: "image" | "video";

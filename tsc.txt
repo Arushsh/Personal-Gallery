@@ -1,0 +1,8 @@
+﻿.next/dev/types/validator.ts(80,39): error TS2306: File 'C:/Shivangi/vault-gallery/src/app/api/media/route.ts' is not a module.
+.next/types/validator.ts(80,39): error TS2306: File 'C:/Shivangi/vault-gallery/src/app/api/media/route.ts' is not a module.
+src/app/api/upload/route.ts(1,24): error TS1261: Already included file name 'C:/Shivangi/vault-gallery/src/lib/cloudinary.ts' differs from file name 'C:/Shivangi/vault-gallery/src/lib/Cloudinary.ts' only in casing.
+  The file is in the program because:
+    Imported via "@/lib/cloudinary" from file 'C:/Shivangi/vault-gallery/src/app/api/upload/route.ts'
+    Matched by include pattern '**/*.ts' in 'C:/Shivangi/vault-gallery/tsconfig.json'
+src/app/gallery/page.tsx(1,21): error TS2307: Cannot find module '@/components/Gallery' or its corresponding type declarations.
+src/app/layout.tsx(2,26): error TS2307: Cannot find module '@/components/SmoothScroll' or its corresponding type declarations.

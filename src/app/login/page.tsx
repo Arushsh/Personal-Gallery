@@ -5,10 +5,20 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Suspense } from "react";
+
+
 
 
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="text-white text-center p-10">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+function LoginForm() {
     const router = useRouter();
     const params = useSearchParams();
     const from = params.get("from") ?? "gallery";

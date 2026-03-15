@@ -6,7 +6,7 @@ import * as THREE from 'three';
 
 export function CarModel(props: any) {
   const group = useRef<THREE.Group>(null);
-  const { scene } = useGLTF('/bmw.glb');
+  const { scene } = useGLTF('/models/bmw.glb');
  
 
   const wheels = useMemo(() => {
@@ -50,4 +50,4 @@ export function CarModel(props: any) {
   );
 }
 
-useGLTF.preload('/bmw.glb');
+useGLTF.preload('/models/bmw.glb');

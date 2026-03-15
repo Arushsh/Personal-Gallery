@@ -7,9 +7,21 @@ export default auth((req: any) => {
     const role = session?.user?.role;
 
     // Public routes that don't need protection
-    if (pathname.startsWith("/api/auth") || pathname.startsWith("/_next") || pathname === "/favicon.ico" || pathname === "/") {
-        return NextResponse.next();
-    }
+    // Allow public assets
+if (
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/models") || // if you later store models here
+    pathname.endsWith(".glb") ||
+    pathname.endsWith(".png") ||
+    pathname.endsWith(".jpg") ||
+    pathname.endsWith(".svg") ||
+    pathname.endsWith(".webp") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/"
+) {
+    return NextResponse.next();
+}
 
     if (!session && pathname !== "/login") {
         return NextResponse.redirect(new URL("/login", req.url));
@@ -28,5 +40,7 @@ export default auth((req: any) => {
 });
 
 export const config = {
-    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)", "/"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|webp|glb)).*)",
+  ],
 };

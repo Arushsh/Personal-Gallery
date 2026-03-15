@@ -1,9 +1,12 @@
 "use client";
+export const dynamic = "force-dynamic";
 import { useState, FormEvent } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
+
+
 
 export default function LoginPage() {
     const router = useRouter();

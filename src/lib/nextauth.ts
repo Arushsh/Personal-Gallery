@@ -28,5 +28,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
         }),
     ],
-    secret: process.env.NEXTAUTH_SECRET ?? "vault-gallery-secret-2024",
+    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "vault-gallery-secret-2024",
 });

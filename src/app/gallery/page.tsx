@@ -174,7 +174,7 @@ export default function GalleryPage() {
                                             <Upload size={14} /> Upload
                                         </Link>
                                     )}
-                                    <button onClick={() => signOut({ callbackUrl: "/" })} className="vault-btn-ghost hover:bg-white/5 rounded-full">
+                                    <button onClick={() => signOut({ callbackUrl: window.location.origin })} className="vault-btn-ghost hover:bg-white/5 rounded-full">
                                         <LogOut size={14} /> Sign out
                                     </button>
                                 </div>

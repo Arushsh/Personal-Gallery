@@ -6,6 +6,7 @@ import type { NextAuthConfig } from "next-auth";
  * because this file is used in middleware (Edge Runtime).
  */
 export const authConfig: NextAuthConfig = {
+    trustHost: true,
     pages: {
         signIn: "/login",
     },

@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Image as ImageIcon, Video, LogOut, Upload, Trash2, Download, LayoutGrid, Sparkles, Clock, ChevronDown } from "lucide-react";
+import { Image as ImageIcon, Video, LogOut, Upload, Trash2, Download, LayoutGrid, Sparkles, Clock, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { IntroCard } from "@/components/IntroCard";
@@ -61,24 +61,35 @@ export default function GalleryPage() {
         });
     }, [filter]);
 
-    // Keyboard lightbox nav
-    useEffect(() => {
-        if (!lightbox.open) return;
-        const visible = getFiltered();
-        const idx = visible.findIndex(m => m.public_id === lightbox.item?.public_id);
-        function handle(e: KeyboardEvent) {
-            if (e.key === "Escape") setLightbox({ open: false, item: null });
-            if (e.key === "ArrowRight" && idx < visible.length - 1) setLightbox({ open: true, item: visible[idx + 1] });
-            if (e.key === "ArrowLeft" && idx > 0) setLightbox({ open: true, item: visible[idx - 1] });
-        }
-        window.addEventListener("keydown", handle);
-        return () => window.removeEventListener("keydown", handle);
-    }, [lightbox, media, filter]);
-
     function getFiltered() {
         if (filter === "all") return media;
         return media.filter(m => m.resource_type === filter);
     }
+
+    const filtered = getFiltered();
+    
+    // Lightbox navigation
+    const navigateLightbox = (direction: 'next' | 'prev') => {
+        if (!lightbox.item) return;
+        const idx = filtered.findIndex(m => m.public_id === lightbox.item?.public_id);
+        if (direction === 'next' && idx < filtered.length - 1) {
+            setLightbox({ open: true, item: filtered[idx + 1] });
+        } else if (direction === 'prev' && idx > 0) {
+            setLightbox({ open: true, item: filtered[idx - 1] });
+        }
+    };
+
+    // Keyboard lightbox nav
+    useEffect(() => {
+        if (!lightbox.open) return;
+        function handle(e: KeyboardEvent) {
+            if (e.key === "Escape") setLightbox({ open: false, item: null });
+            if (e.key === "ArrowRight") navigateLightbox('next');
+            if (e.key === "ArrowLeft") navigateLightbox('prev');
+        }
+        window.addEventListener("keydown", handle);
+        return () => window.removeEventListener("keydown", handle);
+    }, [lightbox, filtered]);
 
     async function handleDelete(item: MediaResource) {
         if (!confirm("Delete this media permanently?")) return;
@@ -88,7 +99,15 @@ export default function GalleryPage() {
             body: JSON.stringify({ resource_type: item.resource_type }),
         });
         setMedia(prev => prev.filter(m => m.public_id !== item.public_id));
-        if (lightbox.item?.public_id === item.public_id) setLightbox({ open: false, item: null });
+        if (lightbox.item?.public_id === item.public_id) {
+            const idx = filtered.findIndex(m => m.public_id === item.public_id);
+            if (filtered.length > 1) {
+                const nextItem = filtered[idx + 1] || filtered[idx - 1];
+                setLightbox({ open: true, item: nextItem });
+            } else {
+                setLightbox({ open: false, item: null });
+            }
+        }
     }
 
     async function loadMore() {
@@ -100,7 +119,6 @@ export default function GalleryPage() {
         setLoadingMore(false);
     }
 
-    const filtered = getFiltered();
     const imageCount = media.filter(m => m.resource_type === "image").length;
     const videoCount = media.filter(m => m.resource_type === "video").length;
 
@@ -248,7 +266,7 @@ export default function GalleryPage() {
                                         )}
                                     </motion.div>
 
-                                    {/* ─── Hero Carousel — UNTOUCHED ─── */}
+                                    {/* ─── Hero Carousel ─── */}
                                     {carouselItems.length > 0 && (
                                         <div className="mb-20">
                                             <div className="flex items-center gap-3 mb-6">
@@ -285,9 +303,9 @@ export default function GalleryPage() {
                                                 </div>
                                             </div>
 
-                                            {/* Masonry grid */}
+                                            {/* Grid */}
                                             <motion.div
-                                                className="vault-masonry"
+                                                className="vault-grid"
                                                 initial="hidden"
                                                 animate="show"
                                                 variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
@@ -296,8 +314,8 @@ export default function GalleryPage() {
                                                     <motion.div
                                                         key={item.public_id}
                                                         variants={{
-                                                            hidden: { opacity: 0, y: 50, scale: 0.9 },
-                                                            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
+                                                            hidden: { opacity: 0, scale: 0.9 },
+                                                            show: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
                                                         }}
                                                         className="vault-card group"
                                                         onClick={() => setLightbox({ open: true, item })}
@@ -318,39 +336,18 @@ export default function GalleryPage() {
                                                         <div className="vault-card-overlay">
                                                             {/* Top: type badge */}
                                                             <span className={`vault-type-badge shadow-lg backdrop-blur-md ${item.resource_type === "video" ? "badge-video" : "badge-photo"}`}>
-                                                                {item.resource_type === "video" ? <Video size={12} /> : <ImageIcon size={12} />}
+                                                                {item.resource_type === "video" ? <Video size={10} /> : <ImageIcon size={10} />}
                                                                 {item.resource_type}
                                                             </span>
 
-                                                            <div className="mt-auto space-y-2">
+                                                            <div className="mt-auto space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                                 {/* Date */}
                                                                 {item.created_at && (
-                                                                    <p className="text-white/60 text-xs flex items-center gap-1">
-                                                                        <Clock size={10} />
+                                                                    <p className="text-white/60 text-[10px] flex items-center gap-1">
+                                                                        <Clock size={8} />
                                                                         {formatDate(item.created_at)}
                                                                     </p>
                                                                 )}
-                                                                {/* Actions */}
-                                                                <div className="flex gap-2">
-                                                                    <a
-                                                                        href={item.secure_url}
-                                                                        download
-                                                                        onClick={e => e.stopPropagation()}
-                                                                        className="vault-icon-btn shadow-lg"
-                                                                        title="Download"
-                                                                    >
-                                                                        <Download size={14} />
-                                                                    </a>
-                                                                    {isUploader && (
-                                                                        <button
-                                                                            onClick={e => { e.stopPropagation(); handleDelete(item); }}
-                                                                            className="vault-icon-btn danger shadow-lg"
-                                                                            title="Delete"
-                                                                        >
-                                                                            <Trash2 size={14} />
-                                                                        </button>
-                                                                    )}
-                                                                </div>
                                                             </div>
                                                         </div>
                                                     </motion.div>
@@ -446,24 +443,49 @@ export default function GalleryPage() {
                 )}
             </AnimatePresence>
 
-            {/* ─── Lightbox ─── */}
-            <AnimatePresence>
+            {/* ─── Swipeable Lightbox ─── */}
+            <AnimatePresence mode="wait">
                 {lightbox.open && lightbox.item && (
                     <motion.div
-                        key="lightbox"
-                        initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-                        animate={{ opacity: 1, backdropFilter: "blur(20px)" }}
-                        exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-                        transition={{ duration: 0.3 }}
+                        key="lightbox-container"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         className="vault-lightbox"
                         onClick={() => setLightbox({ open: false, item: null })}
                     >
+                        {/* Navigation Buttons */}
+                        <div className="absolute inset-y-0 left-0 w-24 flex items-center justify-center z-50 pointer-events-none">
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); navigateLightbox('prev'); }}
+                                className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white transition-all pointer-events-auto"
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+                        </div>
+                        <div className="absolute inset-y-0 right-0 w-24 flex items-center justify-center z-50 pointer-events-none">
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); navigateLightbox('next'); }}
+                                className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white transition-all pointer-events-auto"
+                            >
+                                <ChevronRight size={24} />
+                            </button>
+                        </div>
+
                         <motion.div
-                            initial={{ scale: 0.8, opacity: 0, y: 50 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                            className="vault-lightbox-inner shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 bg-black/60"
+                            key={lightbox.item.public_id}
+                            initial={{ x: 300, opacity: 0, scale: 0.9 }}
+                            animate={{ x: 0, opacity: 1, scale: 1 }}
+                            exit={{ x: -300, opacity: 0, scale: 0.9 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            dragElastic={0.4}
+                            onDragEnd={(_, info) => {
+                                if (info.offset.x < -100) navigateLightbox('next');
+                                if (info.offset.x > 100) navigateLightbox('prev');
+                            }}
+                            className="vault-lightbox-inner shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 bg-black/60 relative p-4"
                             onClick={e => e.stopPropagation()}
                         >
                             {lightbox.item.resource_type === "video" ? (
@@ -471,23 +493,25 @@ export default function GalleryPage() {
                             ) : (
                                 <img src={lightbox.item.secure_url} alt="" className="vault-lightbox-media" />
                             )}
-                            <div className="vault-lightbox-actions bg-black/40 p-3 mt-2 rounded-xl backdrop-blur-md">
-                                {lightbox.item.created_at && (
-                                    <span className="text-zinc-500 text-xs flex items-center gap-1 mr-auto">
-                                        <Clock size={11} /> {formatDate(lightbox.item.created_at)}
-                                    </span>
-                                )}
-                                <a href={lightbox.item.secure_url} download className="vault-btn-sm !bg-white/10 hover:!bg-white/20">
-                                    <Download size={14} /> Download
-                                </a>
-                                {isUploader && (
-                                    <button onClick={() => handleDelete(lightbox.item!)} className="vault-btn-sm danger !bg-red-500/20 hover:!bg-red-500/30">
-                                        <Trash2 size={14} /> Delete
+                            
+                            <div className="vault-lightbox-actions bg-black/40 p-3 mt-4 rounded-xl backdrop-blur-md flex items-center gap-4">
+                                <div className="mr-auto">
+                                    <p className="text-white font-bold text-sm">Memory Details</p>
+                                    <p className="text-zinc-500 text-[10px] font-mono">{formatDate(lightbox.item.created_at)}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <a href={lightbox.item.secure_url} download className="vault-btn-sm !bg-white/10 hover:!bg-white/20">
+                                        <Download size={14} /> 
+                                    </a>
+                                    {isUploader && (
+                                        <button onClick={() => handleDelete(lightbox.item!)} className="vault-btn-sm danger !bg-red-500/20 hover:!bg-red-500/30">
+                                            <Trash2 size={14} /> 
+                                        </button>
+                                    )}
+                                    <button onClick={() => setLightbox({ open: false, item: null })} className="vault-btn-ghost !font-bold hover:text-pink-400">
+                                        ✕
                                     </button>
-                                )}
-                                <button onClick={() => setLightbox({ open: false, item: null })} className="vault-btn-ghost ml-auto !font-bold hover:text-pink-400">
-                                    ✕ Close
-                                </button>
+                                </div>
                             </div>
                         </motion.div>
                     </motion.div>

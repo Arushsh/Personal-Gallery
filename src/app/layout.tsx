@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
     title: "Vault Gallery",
     description: "Your private media vault",
+    icons: {
+        icon: "/logo.png",
+    },  
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

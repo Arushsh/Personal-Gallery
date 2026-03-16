@@ -51,3 +51,8 @@ export function CarModel(props: any) {
 }
 
 useGLTF.preload('/models/bmw.glb');
+
+
+
+
+// kqlBDVN5IpboUuL0

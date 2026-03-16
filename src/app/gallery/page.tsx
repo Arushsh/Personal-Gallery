@@ -1,9 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Image as ImageIcon, Video, Filter, LogOut, Upload, Trash2, Download } from "lucide-react";
+import { Image as ImageIcon, Video, LogOut, Upload, Trash2, Download, LayoutGrid, Sparkles, Clock, ChevronDown } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { IntroCard } from "@/components/IntroCard";
 import { HeroCarousel } from "@/components/HeroCarousel";
@@ -23,9 +22,16 @@ interface LightboxState {
     item: MediaResource | null;
 }
 
+function formatDate(dateStr: string) {
+    try {
+        return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } catch {
+        return "";
+    }
+}
+
 export default function GalleryPage() {
     const { data: session } = useSession();
-    const router = useRouter();
     const isUploader = (session?.user as any)?.role === "uploader";
 
     const [media, setMedia] = useState<MediaResource[]>([]);
@@ -34,8 +40,6 @@ export default function GalleryPage() {
     const [lightbox, setLightbox] = useState<LightboxState>({ open: false, item: null });
     const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [loadingMore, setLoadingMore] = useState(false);
-    
-    // UI State: locked (Intro), or revealed (Gallery)
     const [isRevealed, setIsRevealed] = useState(false);
 
     async function fetchMedia(type: string, cursor?: string) {
@@ -69,7 +73,7 @@ export default function GalleryPage() {
         }
         window.addEventListener("keydown", handle);
         return () => window.removeEventListener("keydown", handle);
-    }, [lightbox, media, filter]); // added deps to ensure latest state
+    }, [lightbox, media, filter]);
 
     function getFiltered() {
         if (filter === "all") return media;
@@ -97,7 +101,9 @@ export default function GalleryPage() {
     }
 
     const filtered = getFiltered();
-    
+    const imageCount = media.filter(m => m.resource_type === "image").length;
+    const videoCount = media.filter(m => m.resource_type === "video").length;
+
     // Split media for Carousel vs Grid
     const carouselItems = filtered.slice(0, 5);
     const gridItems = filtered.slice(5);
@@ -112,7 +118,7 @@ export default function GalleryPage() {
             <div className="vault-blob vault-blob-1" />
             <div className="vault-blob vault-blob-2" />
 
-            {/* Main Gallery Content — animates in only after reveal */}
+            {/* Main Gallery Content */}
             <AnimatePresence>
                 {isRevealed && (
                     <motion.div
@@ -133,7 +139,6 @@ export default function GalleryPage() {
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 sm:gap-4 w-full md:w-auto">
-                                    {/* Filters inside Navbar for cleaner look */}
                                     <div className="flex items-center space-x-2 bg-white/5 rounded-full p-1.5 border border-white/10 shrink-0 overflow-x-auto">
                                         {(["all", "image", "video"] as const).map(f => (
                                             <button
@@ -159,49 +164,135 @@ export default function GalleryPage() {
                         </nav>
 
                         <main className="max-w-[1400px] mx-auto px-6 py-8">
-                            
+
                             {loading ? (
-                                <div className="flex items-center justify-center min-h-[50vh]">
-                                    <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin" />
+                                /* ─── Skeleton Loading ─── */
+                                <div className="space-y-12">
+                                    <div className="flex items-center justify-center gap-6 py-6">
+                                        {[1,2,3].map(i => (
+                                            <div key={i} className="vault-skeleton h-20 w-36 rounded-2xl" />
+                                        ))}
+                                    </div>
+                                    <div className="flex items-center justify-center min-h-[50vh]">
+                                        <div className="flex flex-col items-center gap-4">
+                                            <div className="w-14 h-14 border-4 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin" />
+                                            <p className="text-zinc-500 text-sm tracking-widest uppercase animate-pulse">Loading Vault…</p>
+                                        </div>
+                                    </div>
                                 </div>
                             ) : filtered.length === 0 ? (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-                                    <div className="text-6xl mb-6 bg-gradient-to-br from-cyan-400 to-pink-500 rounded-full w-24 h-24 flex items-center justify-center shadow-[0_0_40px_rgba(255,0,85,0.3)]">
-                                        📷
+                                /* ─── Empty State ─── */
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="flex flex-col items-center justify-center min-h-[70vh] text-center gap-6"
+                                >
+                                    <div className="relative">
+                                        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-cyan-500/20 to-pink-500/20 border border-white/10 flex items-center justify-center text-5xl shadow-[0_0_60px_rgba(0,221,255,0.15)]">
+                                            📷
+                                        </div>
+                                        <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center">
+                                            <Sparkles size={16} className="text-cyan-400" />
+                                        </div>
                                     </div>
-                                    <h2 className="text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-500">The Vault is Empty</h2>
-                                    <p className="text-zinc-400 text-lg mb-8 max-w-sm">There are no memories here yet. Switch to the uploader role to add some.</p>
+                                    <div>
+                                        <h2 className="text-4xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-500">
+                                            The Vault is Empty
+                                        </h2>
+                                        <p className="text-zinc-400 text-base mb-2 max-w-sm mx-auto leading-relaxed">
+                                            No memories have been sealed here yet.
+                                            {filter !== "all" && <span className="text-zinc-500"> Try switching the filter above.</span>}
+                                        </p>
+                                    </div>
                                     {isUploader && (
-                                        <Link href="/upload" className="vault-btn-primary px-8 py-4 text-lg">Upload your first file</Link>
+                                        <Link href="/upload" className="vault-btn-primary px-10 py-4 text-base mt-2">
+                                            <Upload size={18} /> Upload your first memory
+                                        </Link>
                                     )}
                                 </motion.div>
                             ) : (
                                 <>
-                                    {/* 3D Hero Carousel for top items */}
+                                    {/* ─── Stats Bar ─── */}
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -16 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.5 }}
+                                        className="vault-stats-bar mb-10"
+                                    >
+                                        <div className="vault-stat-item">
+                                            <LayoutGrid size={16} className="text-white/50 shrink-0" />
+                                            <span className="vault-stat-num">{media.length}</span>
+                                            <span className="vault-stat-label">Total</span>
+                                        </div>
+                                        <div className="vault-stat-divider" />
+                                        <div className="vault-stat-item">
+                                            <ImageIcon size={16} className="text-cyan-400 shrink-0" />
+                                            <span className="vault-stat-num text-cyan-400">{imageCount}</span>
+                                            <span className="vault-stat-label">Photos</span>
+                                        </div>
+                                        <div className="vault-stat-divider" />
+                                        <div className="vault-stat-item">
+                                            <Video size={16} className="text-purple-400 shrink-0" />
+                                            <span className="vault-stat-num text-purple-400">{videoCount}</span>
+                                            <span className="vault-stat-label">Videos</span>
+                                        </div>
+                                        {filter !== "all" && (
+                                            <>
+                                                <div className="vault-stat-divider" />
+                                                <div className="vault-stat-item">
+                                                    <span className="text-xs text-zinc-400 font-medium">
+                                                        Showing <span className="text-white font-bold">{filtered.length}</span> {filter}s
+                                                    </span>
+                                                </div>
+                                            </>
+                                        )}
+                                    </motion.div>
+
+                                    {/* ─── Hero Carousel — UNTOUCHED ─── */}
                                     {carouselItems.length > 0 && (
                                         <div className="mb-20">
-                                            <div className="text-center mb-6">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <Sparkles size={14} className="text-cyan-400" />
                                                 <h2 className="text-cyan-400 font-bold uppercase tracking-[0.3em] text-xs">Featured</h2>
+                                                <div className="flex-1 h-px bg-gradient-to-r from-cyan-500/30 to-transparent" />
                                             </div>
-                                            <HeroCarousel items={carouselItems} onItemClick={(item) => setLightbox({ open: true, item })} />
+                                            <HeroCarousel
+                                                items={carouselItems}
+                                                onItemClick={(item) => setLightbox({ open: true, item })}
+                                                onDelete={handleDelete}
+                                                isUploader={isUploader}
+                                            />
                                         </div>
                                     )}
 
-                                    {/* Advanced Masonry Grid for remaining items */}
+                                    {/* ─── Archive Grid ─── */}
                                     {gridItems.length > 0 && (
                                         <div>
-                                            <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-                                                <h2 className="text-2xl font-black">Archive</h2>
-                                                <p className="text-zinc-500 font-mono text-sm">{filtered.length} total items</p>
+                                            {/* Section header */}
+                                            <div className="vault-section-header mb-8">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="vault-section-icon">
+                                                        <LayoutGrid size={15} />
+                                                    </div>
+                                                    <div>
+                                                        <h2 className="text-xl font-black text-white tracking-tight">Archive</h2>
+                                                        <p className="text-zinc-500 text-xs font-mono">{filtered.length} memories sealed</p>
+                                                    </div>
+                                                </div>
+                                                <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-600">
+                                                    <Clock size={12} />
+                                                    <span>Newest first</span>
+                                                </div>
                                             </div>
-                                            
+
+                                            {/* Masonry grid */}
                                             <motion.div
                                                 className="vault-masonry"
                                                 initial="hidden"
                                                 animate="show"
                                                 variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
                                             >
-                                                {gridItems.map((item, i) => (
+                                                {gridItems.map((item) => (
                                                     <motion.div
                                                         key={item.public_id}
                                                         variants={{
@@ -223,53 +314,139 @@ export default function GalleryPage() {
                                                         ) : (
                                                             <img src={item.secure_url} alt="" className="vault-card-media" loading="lazy" />
                                                         )}
+
                                                         <div className="vault-card-overlay">
+                                                            {/* Top: type badge */}
                                                             <span className={`vault-type-badge shadow-lg backdrop-blur-md ${item.resource_type === "video" ? "badge-video" : "badge-photo"}`}>
                                                                 {item.resource_type === "video" ? <Video size={12} /> : <ImageIcon size={12} />}
                                                                 {item.resource_type}
                                                             </span>
-                                                            <div className="flex gap-2 mt-auto">
-                                                                <a
-                                                                    href={item.secure_url}
-                                                                    download
-                                                                    onClick={e => e.stopPropagation()}
-                                                                    className="vault-icon-btn shadow-lg"
-                                                                    title="Download"
-                                                                >
-                                                                    <Download size={14} />
-                                                                </a>
-                                                                {isUploader && (
-                                                                    <button
-                                                                        onClick={e => { e.stopPropagation(); handleDelete(item); }}
-                                                                        className="vault-icon-btn danger shadow-lg"
-                                                                        title="Delete"
-                                                                    >
-                                                                        <Trash2 size={14} />
-                                                                    </button>
+
+                                                            <div className="mt-auto space-y-2">
+                                                                {/* Date */}
+                                                                {item.created_at && (
+                                                                    <p className="text-white/60 text-xs flex items-center gap-1">
+                                                                        <Clock size={10} />
+                                                                        {formatDate(item.created_at)}
+                                                                    </p>
                                                                 )}
+                                                                {/* Actions */}
+                                                                <div className="flex gap-2">
+                                                                    <a
+                                                                        href={item.secure_url}
+                                                                        download
+                                                                        onClick={e => e.stopPropagation()}
+                                                                        className="vault-icon-btn shadow-lg"
+                                                                        title="Download"
+                                                                    >
+                                                                        <Download size={14} />
+                                                                    </a>
+                                                                    {isUploader && (
+                                                                        <button
+                                                                            onClick={e => { e.stopPropagation(); handleDelete(item); }}
+                                                                            className="vault-icon-btn danger shadow-lg"
+                                                                            title="Delete"
+                                                                        >
+                                                                            <Trash2 size={14} />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </motion.div>
                                                 ))}
                                             </motion.div>
 
-                                            {nextCursor && (
+                                            {/* Load more / End of vault */}
+                                            {nextCursor ? (
                                                 <div className="text-center mt-16 pb-10">
-                                                    <button onClick={loadMore} disabled={loadingMore} className="border border-white/20 bg-white/5 hover:bg-white/10 text-white px-8 py-3 rounded-full font-bold transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]">
-                                                        {loadingMore ? "Loading from Vault..." : "Load Older Media"}
+                                                    <button
+                                                        onClick={loadMore}
+                                                        disabled={loadingMore}
+                                                        className="vault-load-more-btn"
+                                                    >
+                                                        {loadingMore ? (
+                                                            <span className="flex items-center gap-2">
+                                                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                                Loading from Vault…
+                                                            </span>
+                                                        ) : (
+                                                            <span className="flex items-center gap-2">
+                                                                <ChevronDown size={16} />
+                                                                Load Older Media
+                                                            </span>
+                                                        )}
                                                     </button>
                                                 </div>
+                                            ) : (
+                                                /* End of vault section */
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: 0.3, duration: 0.8 }}
+                                                    className="vault-end-section"
+                                                >
+                                                    <div className="vault-end-line" />
+                                                    <div className="vault-end-content">
+                                                        <div className="vault-end-emblem">⬡</div>
+                                                        <p className="vault-end-title">End of Vault</p>
+                                                        <p className="vault-end-sub">
+                                                            {filtered.length} {filter === "all" ? "memories" : filter + "s"} — all sealed
+                                                        </p>
+                                                        {isUploader && (
+                                                            <Link href="/upload" className="vault-btn-sm mt-4 border-white/10">
+                                                                <Upload size={13} /> Add more memories
+                                                            </Link>
+                                                        )}
+                                                    </div>
+                                                    <div className="vault-end-line" />
+                                                </motion.div>
                                             )}
                                         </div>
+                                    )}
+
+                                    {/* When there are only carousel items and no grid items */}
+                                    {carouselItems.length > 0 && gridItems.length === 0 && !nextCursor && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.4, duration: 0.8 }}
+                                            className="vault-end-section"
+                                        >
+                                            <div className="vault-end-line" />
+                                            <div className="vault-end-content">
+                                                <div className="vault-end-emblem">⬡</div>
+                                                <p className="vault-end-title">End of Vault</p>
+                                                <p className="vault-end-sub">
+                                                    {filtered.length} {filter === "all" ? "memories" : filter + "s"} — all sealed
+                                                </p>
+                                                {isUploader && (
+                                                    <Link href="/upload" className="vault-btn-sm mt-4 border-white/10">
+                                                        <Upload size={13} /> Add more memories
+                                                    </Link>
+                                                )}
+                                            </div>
+                                            <div className="vault-end-line" />
+                                        </motion.div>
                                     )}
                                 </>
                             )}
                         </main>
+
+                        {/* ─── Page Footer ─── */}
+                        <footer className="vault-page-footer">
+                            <div className="max-w-[1400px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+                                <span className="text-zinc-700 text-xs font-mono">⬡ Vault Gallery</span>
+                                <span className="text-zinc-700 text-xs">
+                                    {new Date().getFullYear()} · Made with <span className="text-pink-600">♥</span> by Arush
+                                </span>
+                            </div>
+                        </footer>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Lightbox */}
+            {/* ─── Lightbox ─── */}
             <AnimatePresence>
                 {lightbox.open && lightbox.item && (
                     <motion.div
@@ -295,8 +472,13 @@ export default function GalleryPage() {
                                 <img src={lightbox.item.secure_url} alt="" className="vault-lightbox-media" />
                             )}
                             <div className="vault-lightbox-actions bg-black/40 p-3 mt-2 rounded-xl backdrop-blur-md">
+                                {lightbox.item.created_at && (
+                                    <span className="text-zinc-500 text-xs flex items-center gap-1 mr-auto">
+                                        <Clock size={11} /> {formatDate(lightbox.item.created_at)}
+                                    </span>
+                                )}
                                 <a href={lightbox.item.secure_url} download className="vault-btn-sm !bg-white/10 hover:!bg-white/20">
-                                    <Download size={14} /> Download File
+                                    <Download size={14} /> Download
                                 </a>
                                 {isUploader && (
                                     <button onClick={() => handleDelete(lightbox.item!)} className="vault-btn-sm danger !bg-red-500/20 hover:!bg-red-500/30">
@@ -304,7 +486,7 @@ export default function GalleryPage() {
                                     </button>
                                 )}
                                 <button onClick={() => setLightbox({ open: false, item: null })} className="vault-btn-ghost ml-auto !font-bold hover:text-pink-400">
-                                    ✕ Close Viewer
+                                    ✕ Close
                                 </button>
                             </div>
                         </motion.div>

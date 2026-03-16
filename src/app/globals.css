@@ -504,3 +504,136 @@ body {
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
+/* ─── Stats Bar ─── */
+.vault-stats-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 0.6rem 1.25rem;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    backdrop-filter: blur(10px);
+}
+.vault-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 0.9rem;
+    white-space: nowrap;
+}
+.vault-stat-num {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+.vault-stat-label {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.35);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+.vault-stat-divider {
+    width: 1px;
+    height: 28px;
+    background: rgba(255,255,255,0.08);
+    flex-shrink: 0;
+}
+
+/* ─── Archive Section Header ─── */
+.vault-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.vault-section-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.6);
+    flex-shrink: 0;
+}
+
+/* ─── Load More Button ─── */
+.vault-load-more-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.75rem 2rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.22,1,0.36,1);
+}
+.vault-load-more-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.09);
+    border-color: rgba(0,221,255,0.35);
+    color: #00ddff;
+    box-shadow: 0 0 30px rgba(0,221,255,0.08);
+}
+.vault-load-more-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── End of Vault Section ─── */
+.vault-end-section {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 4rem;
+    margin-bottom: 3rem;
+    padding: 0 0.5rem;
+}
+.vault-end-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+}
+.vault-end-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0 1rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+.vault-end-emblem {
+    font-size: 1.5rem;
+    color: rgba(255,255,255,0.15);
+    line-height: 1;
+    margin-bottom: 0.2rem;
+}
+.vault-end-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+}
+.vault-end-sub {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.18);
+    font-family: monospace;
+}
+
+/* ─── Page Footer ─── */
+.vault-page-footer {
+    border-top: 1px solid rgba(255,255,255,0.04);
+    padding: 1.5rem 1.5rem;
+    margin-top: 2rem;
+}

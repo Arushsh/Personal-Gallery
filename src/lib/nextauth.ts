@@ -10,7 +10,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
-                const user = findUser(
+                const user = await findUser(
                     credentials?.email as string,
                     credentials?.password as string
                 );
@@ -27,12 +27,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     callbacks: {
         jwt({ token, user }) {
             if (user) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 token.role = (user as any).role;
             }
             return token;
         },
         session({ session, token }) {
             if (session.user && token.role) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (session.user as any).role = token.role;
             }
             return session;

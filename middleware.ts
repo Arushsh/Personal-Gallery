@@ -6,7 +6,7 @@ export default auth((req: any) => {
   const session = req.auth;
   const role = session?.user?.role;
 
-  if (!session && pathname !== "/login") {
+  if (!session && pathname !== "/login" && pathname !== "/") {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
